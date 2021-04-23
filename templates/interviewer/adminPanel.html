@@ -1,0 +1,65 @@
+{% extends "Home.html" %}
+
+{% block content %}
+    {% include 'messages.html' %}
+
+    {% block overrideninchild %}
+
+
+    {% endblock %}
+
+    <link rel="stylesheet"  type="text/css" href="/static/adminPanel.css">
+    
+    <section id="cover" class="min-vh-100">
+      
+        <div class="container">
+            <div class="col text-white">
+                   <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 mx-auto text-center form p-4">
+                    <h1 class="display-6 py-2 text-truncate ">Admin Panel</h1>
+                        
+                        <!-- <form action="" class="justify-content-center"> -->
+    
+    <!-- add new question  -->
+                            <div class="card display-6" style="width: 18rem;">
+                                <div class="card-body">
+                                  <h5 class="card-title mb-2 text-muted" >Add New Question</h5>
+                                  <!-- <h6 class="card-subtitle mb-2 text-muted">You can add new question here.</h6> -->
+                                  <!-- //<p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p> -->
+                                  <a href="addQuestion" class="card-link">Add</a>
+                                  <!-- //<a href="#" class="card-link">Another link</a> -->
+                                </div>
+                              </div>
+
+    <!-- show all questions  -->
+
+    <div class="card c2 display-6" style="width: 18rem;">
+        <div class="card-body">
+          <h5 class="card-title mb-2 text-muted" >View All Questions</h5>
+          <!-- <h6 class="card-subtitle mb-2 text-muted">You can add new question here.</h6> -->
+          <!-- //<p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p> -->
+          <a href="showQuestions" class="card-link">View</a>
+          <!-- //<a href="#" class="card-link">Another link</a> -->
+        </div>
+      </div>
+
+                              
+                              
+
+                              </div>
+    
+                            
+                            
+                        
+                    
+                
+            
+        </div>
+    </div>
+    
+   
+    
+    </section>
+    
+
+
+{% endblock %}

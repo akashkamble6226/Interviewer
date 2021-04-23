@@ -1,0 +1,78 @@
+body
+{
+    background: #222 url('/static/int3.jpg') center center no-repeat;
+    height: 100%;
+    width: 100%;
+    overflow:auto;
+   
+    
+    
+}
+
+.navbar-brand,.nav-link
+{
+    color: #ffffff;
+}
+
+.navbar-custom
+{
+    width: 100%;
+    background-color: #4285F4;
+   
+}
+
+
+#reg a
+{
+    text-decoration: none;
+
+}
+
+#reg a:hover
+{
+    color: #ffffff;
+}
+
+
+form:before {
+    content: '';
+    height: 100%;
+    left: 0;
+    position: absolute;
+    top: 0;
+    width: 100%;
+    background-color: rgba(0,0,0,0.5);
+    z-index: -1;
+    border-radius: 10px;
+}
+
+form-group label
+{
+    align-items: left;
+    text-align: left;
+}
+
+.page-footer
+
+{
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background-color: #4285F4;
+}
+
+
+
+.copyright,.team
+{
+
+    color: #ffffff;
+
+}
+/* // this is a white icon with 50% opacity */
+.navbar-toggler {
+    border-color: rgb(255,102,203);
+  } 
+
+  

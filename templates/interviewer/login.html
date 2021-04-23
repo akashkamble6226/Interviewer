@@ -1,0 +1,72 @@
+{% extends "Home.html" %}
+
+{% block content %}
+
+{% include 'messages.html' %}
+
+    {% block overrideninchild %}
+
+
+    {% endblock %}
+
+<section id="cover" class="min-vh-100">
+      
+    <div class="container">
+        <div class="col text-white">
+            <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 mx-auto text-center form p-4">
+                <h1 class="display-6 py-2 text-truncate">Login Here</h1>
+                    <div class="d-flex flex-row justify-content-center align-items-center">
+
+                    </div>
+                    <form action="login" method="POST" class="justify-content-center">
+
+                        {% csrf_token %}
+                        
+                            <div class="form-group">
+                                <label for="mobile" >
+                                    Mobile Number:
+                                    <input type="text" name="phone" class="form-control">
+                                 </label>
+                     
+                                </label>
+                                </div>
+                     
+                                <div class="form-group">
+                                 <label for="password">
+                                    Password:
+                                    <input type="password" name="pass" class="form-control">
+                     
+                      
+                                 </label>
+                                 </div>
+
+                                 <div  id="reg">
+                                    <a  href="register">Not yet registerd ? Register Now.</a>
+                                 </div>
+
+                                 <br>
+                               
+
+                                 
+                     
+                                 <button type="submit" class="btn btn-default">
+                                     Login
+                                 </button>
+
+                                 <br>
+                                 <br>
+                       
+                        
+                    </form>
+                
+            </div>
+        
+    </div>
+</div>
+
+
+</section>
+
+
+
+{% endblock %}

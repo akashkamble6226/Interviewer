@@ -1,0 +1,5 @@
+give
+answer
+class
+object
+polymorphism

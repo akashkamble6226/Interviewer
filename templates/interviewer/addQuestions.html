@@ -1,0 +1,77 @@
+{% extends "Home.html" %}
+
+{% block content %}
+    {% include 'messages.html' %}
+
+    {% block overrideninchild %}
+
+
+    {% endblock %}
+
+    <section id="cover" class="min-vh-100">
+      
+        <div class="container">
+            <div class="col text-white">
+                <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 mx-auto text-center form p-4">
+                    <h1 class="display-6 py-2 text-truncate">Add Question</h1>
+                        <div class="d-flex flex-row justify-content-center align-items-center">
+    
+                        </div>
+                        <!-- <form action="" class="justify-content-center"> -->
+    
+    
+                            <form action="addQuestion" class="cent" method="POST">
+    
+                                {% csrf_token %}
+    
+                                <div class="form-group">
+                                    <label for="q_name" >
+                                        Question Name:
+                                        <input type="text" name="q_name" class="form-control">
+                                     </label>
+                                </div>
+                                
+    
+                               
+                                <div class="form-group">
+                                    <label for="q_answer" >
+                                       Answer:
+                                        <input type="text" name="q_answer" class="form-control">
+                                     </label>
+                                </div>
+                         
+                                    
+    
+                                     
+    
+                                     
+                                     <br>
+                                   
+    
+                                     
+                         
+                                     <button type="submit" class="btn btn-default">
+                                         Add Question
+                                     </button>
+                            </form>
+    
+                            
+                            
+                        
+                    
+                </div>
+            
+        </div>
+    </div>
+    
+    <br>
+                                     <br>
+                                     <br>
+                                     <br>
+    
+    
+    </section>
+    
+
+
+{% endblock %}

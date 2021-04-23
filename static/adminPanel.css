@@ -1,0 +1,17 @@
+.card {
+    margin: 0 auto; /* Added */
+    float: none; /* Added */
+    margin-bottom: 10px; /* Added */
+    background-color: #FDE896;
+}
+
+.c2
+{
+    background-color: #7CDEDF;
+}
+
+.card-link
+{
+    color: #000000;
+    font-weight: bold;
+}

@@ -1,0 +1,117 @@
+{% extends "Home.html" %}
+
+{% block content %}
+
+
+   
+
+
+
+
+
+{% include 'messages.html' %}
+
+    {% block overrideninchild %}
+
+
+    {% endblock %}
+
+    <!-- <canvas id="canvas">
+        
+    </canvas>
+<script src="https://unpkg.com/rive-js@0.7.6/dist/rive.min.js"></script>
+<script>
+  // autoplays the first animation in the default artboard
+  new rive.Rive({
+    src: 'https://public.rive.app/community/runtime-files/47-61-checkanimation.riv',
+    canvas: document.getElementById('canvas'),
+    autoplay: true,
+  })
+</script> -->
+
+   
+
+
+
+    <div class="table-dark table-striped">
+        <table class="table table table-bordered" >
+
+       
+
+            <tr>
+
+                <th>Question Id</th>
+                <th>Question</th>
+                <th>Answer</th>
+                <th>Actions</th>
+                
+                
+            </tr>
+
+       
+
+        <tbody>
+
+            {% for q in question %}
+
+            
+           
+              
+              <tr>
+                <td>{{ q.index_no }}</td> 
+                             <td>{{ q.questions }}</td> 
+                            <td>{{q.answers  }}</td> 
+
+                    <td>
+
+                        <div class="act">
+
+                                    
+                                    
+                            <a href="{% url 'edit_question' q.id %}" class="btn btn-primary " role="button"  title="Edit">
+                                <i class="fas fa-pencil-alt"></i>
+                            </a>
+
+                            <a href= "{% url 'delete_question' q.id %}" class="btn btn-danger" role="button"  title="Delete">
+                                <i class="fas fa-trash-alt"></i>
+                            </a>
+                          
+                          
+                          
+                          
+                            
+
+                            
+
+                        </div>
+
+                    </td>
+
+                            
+                            
+                                
+                       
+                         
+
+                            
+
+
+                             
+
+            
+            
+            </tr>
+
+          
+            
+            {% endfor %}
+
+               
+
+
+
+
+
+
+{% endblock %}
+
