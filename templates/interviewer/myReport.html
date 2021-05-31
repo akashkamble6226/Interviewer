@@ -1,0 +1,146 @@
+{% extends "Home.html" %}
+
+{% block content %}
+    {% include 'messages.html' %}
+
+    {% block overrideninchild %}
+
+
+{% endblock %}
+
+
+<!-- <canvas id="canvas">
+        
+</canvas>
+<script src="https://unpkg.com/rive-js@0.7.6/dist/rive.min.js"></script>
+<script>
+// autoplays the first animation in the default artboard
+new rive.Rive({
+src: 'https://public.rive.app/community/runtime-files/47-61-checkanimation.riv',
+canvas: document.getElementById('canvas'),
+autoplay: true,
+})
+</script> -->
+
+{% load get_current_date %}
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing: border-box;
+    font-family: Arial, Helvetica, sans-serif;
+    /* background:linear-gradient(to right,#9c27b0,#8ecdff); */
+
+}
+
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    background-color: #f1f1f1;
+    position: relative;
+    padding-bottom: 58px;
+    min-height: 100vh;
+    
+  }
+
+
+
+
+.Ccard 
+{
+    
+  
+    margin-left:30%;
+    margin-top: 50px;
+    margin-right: 10%;
+
+
+
+}
+
+#pr
+{
+    display: block;
+    margin: 0 auto;
+    
+    width: fit-content;
+    text-align: center;
+    margin-top: 10px;
+    margin-bottom: 150px;
+}
+
+
+
+</style>
+
+<body>
+
+
+
+<div id="printableArea">
+<div class="card Ccard" style="width: 50%; height: 100%; margin-top: 20px; margin-bottom: 10px;">
+    <h5 class="card-header text-center" style="font-size: 20px; ">
+        <strong>
+
+            {% if user.is_authenticated %}
+            {{ user.username }}
+            {% endif %}  
+        </strong></h5>
+    <div class="container">
+        <div class="row" >
+            <div class="col-md-6 text-center"  >
+                
+                    <h6 style=" text-align:center; font-size: 18px; margin-top: 10px;" >Your Score is - 100% </h6>
+                
+            </div>
+
+            <div class="col-md-6 text-center"  >
+                
+                <h6 style=" text-align:center; font-size: 18px; margin-top: 10px;" > Today's Date  - {% getDate %}</h6>
+               
+            
+            </div>
+
+            
+
+            
+        </div>
+    </div>
+    
+    <!-- called the function -->
+    {% for q in Questions %}
+    <hr>
+    <h6 style="font-size: 18px; padding-left:5px;">Question No : {{q.index_no}}</h6>
+    <hr>
+    <div class="card-body">
+       
+      <h6 style="font-size: 18px;">Name : {{q.questions}}</h6>
+      
+      <h6 style="font-size: 18px;">Correct Answer: {{q.answers}}</h6>
+      <h6 style="font-size: 18px;">Given Answer: {{q.given_answer}}</h6>
+      
+
+
+      
+    </div>
+   
+    {% endfor %}  
+  </div>
+</div>
+
+     
+
+
+
+
+
+
+
+
+
+
+  
+   {% endblock %}
+
+</body>

@@ -1,3 +1,4 @@
+from os import remove
 from django.http.response import HttpResponse
 from django.shortcuts import redirect, render
 from django.contrib.auth.models import User,auth
@@ -6,7 +7,6 @@ from django.contrib import messages
 
 
 # Create your views here.
-
 
 import pyttsx3
 # text simmilarity
@@ -23,6 +23,8 @@ from django.views.decorators.csrf import csrf_exempt
 def login(request):
     Questions = InterviewData.objects.all()
 
+
+
     if request.method == 'POST':
         username = request.POST['phone'];
         password = request.POST['pass'];
@@ -35,6 +37,15 @@ def login(request):
             if user is not None:
                 auth.login(request, user)
                 messages.success(request,"Welcome")
+
+                for q in Questions:
+                    # clearing the accuracy columns
+                    InterviewData.objects.filter(id=q.id).update(accuracy_hundred = [])
+                    InterviewData.objects.filter(id=q.id).update(accuracy_eighty = [])
+                    # clearing the previus given ans 
+                    InterviewData.objects.filter(id=q.id).update(given_answer = " ")
+
+
 
                 return render(request, 'mainpage.html', {'Questions': Questions})
             else:
@@ -85,6 +96,14 @@ def logout(request):
     messages.success(request,"Logout Successfull")
     return redirect("login")
 
+
+def mainpage(request):
+    Questions = InterviewData.objects.all()
+    return render(request, 'mainpage.html', {'Questions': Questions})
+
+    
+
+
 # ----- admin question adding -------
 
 
@@ -109,7 +128,7 @@ def addQuestion(request):
             processed_predefined_ans = " "
             for item in individual_items_list:
                 processed_predefined_ans = processed_predefined_ans + item + " "
-                print(processed_predefined_ans)
+               
                 
             index = InterviewData.objects.count() + 1
 
@@ -153,7 +172,8 @@ def update_question(request,id):
         return render(request, 'editQuestion.html', {'question':question})
 
 def store_users_given_answer(id,givenAnswer):
-    InterviewData.objects.filter(id=id).update(given_answer=givenAnswer)      
+    InterviewData.objects.filter(id=id).update(given_answer=givenAnswer) 
+    
     # return redirect("showQuestions")
     
     
@@ -185,125 +205,142 @@ def giveAnswer(request, id):
     Questions = InterviewData.objects.all()
     question  =  Questions.get(id=id)
 
-    # deleting preious answer 
-    
+    # deleting preious answer if any available
     InterviewData.objects.filter(id=question.id).update(accuracy_hundred = [])
     InterviewData.objects.filter(id=question.id).update(accuracy_eighty = [])
 
-    nlp = spacy.load("en_core_web_md")
+   
             
     r = sr.Recognizer()
-
-    lst1 = []
-    lst2 = []
+    Given_ans = " "
 
 
     with sr.Microphone() as source:
-        audio = r.listen(source,timeout=1)
+        audio = r.record(source,duration = 5)
 
         try:
             givenAns = r.recognize_google(audio)
 
             ProcessedAnsList = doPreprocessingOfText(givenAns)
 
-            #storing answer to givenAnswer txt file
-
-            Given_ans = " "
-
             for item in ProcessedAnsList:
                 Given_ans = Given_ans + item + " "
-                   
-                store_users_given_answer(question.id,Given_ans)
-
-
-                ex1 = nlp(question.given_answer)
-                ex2 = nlp(question.answers)
-
-                # inserting words which are commen as per given condition 
-                for token1 in ex1:
-                    for token2 in ex2:
-                        if(token1.similarity(token2) == 1.0):
-                            if(len(token1) != 0 and len(token2) != 0):
-                                
-                                lst1.append(token1.text)
-   
-                            elif(token1.similarity(token2) >= 0.80):
-                                
-                                lst2.append(token1.text)
-    
-                # removing unwanted first element which is space
-                if(len(lst1) >= 1):
-                    {
-                        lst1.pop(0)
-
-                    }
-                       
+            
+            # storing users given answer into database
+            store_users_given_answer(question.id,Given_ans)
+ 
         except:
-                #or i can simply speak the message
                 messages.info(request,"Sorry could not listen your voice.")
-                    
-       
-        update_accuracy(question.id,True,lst1)
-        update_accuracy(question.id,False,lst2)
-     
-
-        # print(len(lst1))
-        # print(len(lst2))
-
         
-
-        # InterviewData.objects.filter(id=question.id).update(accuracy_hundred = lst1)
-        # InterviewData.objects.filter(id=question.id).update(accuracy_eighty = lst2)
-
-
-
-
-
-
-        # if(len(lst1) == 0):
-        #     messages.info(request,"Sorry could not listen your voice.")
-        #     print("Say Something please.......")
-                
-       
-
-        # if(len(lst2) == 0):
-        #     {
-            # visualize(lst1)
-        #     }
-
-        # else:
-        #     {
-        #     visualize2(lst1,lst2)
-        # }
+    #preparing for updating accuracy
+    prpare_for_updating_accuracy(question.id)
     return render(request, 'mainpage.html', {'Questions': Questions})
+
+def prpare_for_updating_accuracy(questionId):
+    Questions = InterviewData.objects.all()
+    question =  Questions.get(id=questionId)
+
+    nlp = spacy.load("en_core_web_md")
+    
+    lst1 = []
+    lst2 = []
     
 
+    ex1 = nlp(question.given_answer)
+    ex2 = nlp(question.answers)
+    for token1 in ex1:
+        for token2 in ex2:    
+            if(token1.similarity(token2) == 1.0):
+                lst1.append(token1.text)
+            if(token1.similarity(token2) >= 0.80 and token1.similarity(token2) < 1.0):
+                lst2.append(token1.text)
+            
+
+    # finally sending for updating the accuracy
+                
+    update_accuracy(question.id,True,lst1)
+    update_accuracy(question.id,False,lst2)
 
 
 def update_accuracy(questionId, isHundered, accuracyTypeList):
+    print(len(accuracyTypeList))
     Questions = InterviewData.objects.all()
     question =  Questions.get(id=questionId)
     if(isHundered):
-        if(len(accuracyTypeList) != 0):
+        if(len(accuracyTypeList) >= 1):
             
             frequencyOfWord = []
-            wordFreq1 = 1.0
             
-            for b in accuracyTypeList:  
-                frequencyOfWord.append(wordFreq1)
-            InterviewData.objects.filter(id=question.id).update(accuracy_hundred = frequencyOfWord)
-            frequencyOfWord.clear()
-            # //below clearing the previus score from that field
+            wordFreq1 = 1.0
 
+            # removing the duplicates if any 
+            
+            accuracyTypeList = list(set(accuracyTypeList))
+            for b in accuracyTypeList:
+                if(b != " "):
+                    frequencyOfWord.append(wordFreq1)
+           
+            if(len(question.accuracy_hundred) != 0):  
+                question.accuracy_hundred.clear()
+                InterviewData.objects.filter(id=question.id).update(accuracy_hundred = frequencyOfWord)        
+         
+            else:
+                InterviewData.objects.filter(id=question.id).update(accuracy_hundred = frequencyOfWord)
+  
+            frequencyOfWord.clear()
+           # //below clearing the previus score from that field
+        else:
+            print("accuracy 100 list is empty")
 
     else:
         if(len(accuracyTypeList) != 0):
-            
             frequencyOfWord2 = []
             wordFreq2 = 0.8
-            
             for b in accuracyTypeList:
-                print(b)
-                frequencyOfWord2.append(wordFreq2)
-            InterviewData.objects.filter(id=question.id).update(accuracy_eighty = frequencyOfWord2)
+                if(b!=" "):
+                    frequencyOfWord2.append(wordFreq2)
+            InterviewData.objects.filter(id=questionId).update(accuracy_eighty = frequencyOfWord2)
             frequencyOfWord2.clear()
+        else:
+            print("accuracy 80 list is empty")
+
+
+def isAnsGiven(request, id):
+    
+    Questions = InterviewData.objects.all()
+    question =  Questions.get(id=id)
+    ansLen = len(question.given_answer)
+    if(ansLen == 0 or question.given_answer == " "):
+        messages.warning(request,"Please answer the question first before submitting.")
+    else:
+        messages.success(request,"Answer submitted successfully")
+    return render(request, 'mainpage.html', {'Questions': Questions})
+
+
+
+
+
+def showReport(request):
+    Questions = InterviewData.objects.all()
+    Questions_cnt = InterviewData.objects.count()
+
+    answerdQuestions = 0
+    for q in Questions:
+        if(len(q.given_answer) != 0 and q.given_answer != " "):
+            answerdQuestions = answerdQuestions + 1
+    
+    print(answerdQuestions)
+    print(Questions_cnt)
+    
+    if(answerdQuestions == Questions_cnt):
+        # i have answerd all the questions
+        return render(request, 'myReport.html', {'Questions': Questions})
+    else:
+        # I dident 
+        messages.warning(request,"Please answer all the questions to generate report.")
+        return render(request, 'myReport.html')
+
+    
+
+
+

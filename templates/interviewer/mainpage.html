@@ -110,36 +110,25 @@ autoplay: true,
                     <a href="{% url 'giveAnswer' q.id %}" class="title"> Give the answer</a>
 
                  </td> 
+                 
+                 <form action="{% url 'isAnsGiven' q.id %}" method="GET">
+                    <td><button type="submit" class="btn btn-success">Submit</button></td> 
 
-                 <td><button type="button" class="btn btn-success">Submit</button></td> 
+                </form>
+
+
 
         
     </tr>
 
-        <!-- {% load backcolor %}
-
-        {% chooseBackColor as color_name %} -->
-
-    
-        <!-- <div class="container">
-            <div class="row">
-            <div class="card text-white {{ color_name }} " style="max-width: 18rem;">
-                <div class="card-header">
-                    {{ q.index_no }}
-
-                    <a href= "{% url 'askQuestion' q.id %}" style="color: white;"  class="card-link">Listen Question</a>
-
-                </div>
-                <div class="card-body">
-                    <a href="#" style="color: white;" >Give Answer</a>
-                </div>
-            </div>
-            </div>
-        </div> -->
-        <!-- </div> -->
+       
     
 
    {% endfor %}
+
+
+   
+
 
    </tbody>
 
