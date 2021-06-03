@@ -2,8 +2,11 @@ from os import remove
 from django.http.response import HttpResponse
 from django.shortcuts import redirect, render
 from django.contrib.auth.models import User,auth
+from nltk.util import pr
+from numpy.lib.function_base import append
 from .models import InterviewData
 from django.contrib import messages 
+import json as simplejson
 
 
 # Create your views here.
@@ -16,6 +19,9 @@ from small_files.preprocessing_of_file import doPreprocessing,doPreprocessingOfT
 from small_files.visualization import visualize,visualize2
 # below line is for avoiding error on reload
 from django.views.decorators.csrf import csrf_exempt
+
+
+
 
 
 # ----- login , register, logout .-------
@@ -44,6 +50,10 @@ def login(request):
                     InterviewData.objects.filter(id=q.id).update(accuracy_eighty = [])
                     # clearing the previus given ans 
                     InterviewData.objects.filter(id=q.id).update(given_answer = " ")
+                    InterviewData.objects.filter(id=q.id).update(marks_in_perc = 0)
+                    InterviewData.objects.filter(id=q.id).update(accuracy_eighty_words = [])
+                    InterviewData.objects.filter(id=q.id).update(accuracy_zero_words = [])
+                    InterviewData.objects.filter(id=q.id).update(accuracy_hundred_words = [])
 
 
 
@@ -116,6 +126,7 @@ def addQuestion(request):
     if(request.method == "POST"):
         question = request.POST['q_name']
         answer = request.POST['q_answer']
+        
         if(len(question) == 0 or len(answer) == 0 ):
 
             
@@ -132,7 +143,7 @@ def addQuestion(request):
                 
             index = InterviewData.objects.count() + 1
 
-            new_question = InterviewData(questions = question, answers = processed_predefined_ans, index_no = index, accuracy_hundred = [], accuracy_eighty=[]  )
+            new_question = InterviewData(questions = question, answers = processed_predefined_ans, index_no = index, accuracy_hundred = [], accuracy_eighty=[], marks_in_perc=0, accuracy_eighty_words=[],accuracy_hundred_words=[],accuracy_zero_words=[] )
             new_question.save()
             messages.success(request,"Question added successfully!")
             return redirect("adminPanel")
@@ -216,7 +227,7 @@ def giveAnswer(request, id):
 
 
     with sr.Microphone() as source:
-        audio = r.record(source,duration = 5)
+        audio = r.record(source,duration = 8)
 
         try:
             givenAns = r.recognize_google(audio)
@@ -236,6 +247,9 @@ def giveAnswer(request, id):
     prpare_for_updating_accuracy(question.id)
     return render(request, 'mainpage.html', {'Questions': Questions})
 
+
+
+
 def prpare_for_updating_accuracy(questionId):
     Questions = InterviewData.objects.all()
     question =  Questions.get(id=questionId)
@@ -244,22 +258,56 @@ def prpare_for_updating_accuracy(questionId):
     
     lst1 = []
     lst2 = []
-    
+    word_0_acc = []
+    word_80_acc = []
+    word_100_acc = []
+
 
     ex1 = nlp(question.given_answer)
     ex2 = nlp(question.answers)
     for token1 in ex1:
         for token2 in ex2:    
             if(token1.similarity(token2) == 1.0):
-                lst1.append(token1.text)
-            if(token1.similarity(token2) >= 0.80 and token1.similarity(token2) < 1.0):
-                lst2.append(token1.text)
+                if(token1.text != " "):
+                    lst1.append(token1.text)
+                    word_100_acc.append(token1.text)
+
+                
+            elif(token1.similarity(token2) >= 0.50 and token1.similarity(token2) < 1.0):
+                if(token1.text != " "):
+                    lst2.append(token1.text)
+                    word_80_acc.append(token1.text)
+            
+            else:
+                if(token1.text != " "):
+                    word_0_acc.append(token1.text)
+
+               
             
 
     # finally sending for updating the accuracy
                 
     update_accuracy(question.id,True,lst1)
     update_accuracy(question.id,False,lst2)
+    update_all_words(question.id,word_0_acc,word_80_acc,word_100_acc)
+
+
+def update_all_words(id, zero, eighty, hundred):
+    Questions = InterviewData.objects.all()
+    question =  Questions.get(id=id)
+
+    # just removing duplicate items
+    seen = set()
+    result_0= []
+    for item in zero:
+       if item not in eighty:
+           if item not in hundred:
+               if item not in question.answers:
+                   seen.add(item)
+                   result_0.append(item)
+
+    InterviewData.objects.filter(id=question.id).update(accuracy_zero_words =result_0,accuracy_eighty_words=eighty,accuracy_hundred_words =hundred)
+
 
 
 def update_accuracy(questionId, isHundered, accuracyTypeList):
@@ -304,7 +352,7 @@ def update_accuracy(questionId, isHundered, accuracyTypeList):
         else:
             print("accuracy 80 list is empty")
 
-
+# comming to this function when a submit button is clicked 
 def isAnsGiven(request, id):
     
     Questions = InterviewData.objects.all()
@@ -313,34 +361,129 @@ def isAnsGiven(request, id):
     if(ansLen == 0 or question.given_answer == " "):
         messages.warning(request,"Please answer the question first before submitting.")
     else:
+
+        calculate_percentage(id)
+        
         messages.success(request,"Answer submitted successfully")
     return render(request, 'mainpage.html', {'Questions': Questions})
 
 
+def calculate_percentage(id):
+    Questions = InterviewData.objects.all()
+    question =  Questions.get(id=id)
+    # checking the word count from the stored ans  
+    stored_ans_cnt = question.answers.split()
 
+    combined_accuracy_list = []
+
+    for a in question.accuracy_hundred:
+        if a != " ":
+            combined_accuracy_list.append(a)
+    for b in question.accuracy_eighty:
+        if b != " ":
+            combined_accuracy_list.append(b)
+
+    marks_for_question = 0
+
+    for acc in combined_accuracy_list:
+        if(acc == 0.80 or acc == 0.8):
+            marks_for_question+= 80
+        else:
+            marks_for_question+= 100
+
+    
+    # below line is becuase we dont know how many line of answer we store it is variabel(changabel)
+    out_of =  len(stored_ans_cnt) * 100
+    quotient = (marks_for_question) / (out_of)
+
+    marks_perc = quotient * 100
+    # finally returning percentage value to calling function to store into databse 
+    InterviewData.objects.filter(id=id).update(marks_in_perc=marks_perc)
 
 
 def showReport(request):
     Questions = InterviewData.objects.all()
     Questions_cnt = InterviewData.objects.count()
 
-    answerdQuestions = 0
+    print(Questions_cnt)
+    answerdQuestionsCount = 0
+    answerdQuestions = []
+    finalScore = 0
     for q in Questions:
         if(len(q.given_answer) != 0 and q.given_answer != " "):
-            answerdQuestions = answerdQuestions + 1
+            answerdQuestions.append(q)
+            answerdQuestionsCount = answerdQuestionsCount + 1
+            finalScore+= q.marks_in_perc
+    print(answerdQuestionsCount)
     
-    print(answerdQuestions)
-    print(Questions_cnt)
-    
-    if(answerdQuestions == Questions_cnt):
+    if(answerdQuestionsCount!= 0 and Questions_cnt != 0 and answerdQuestionsCount == Questions_cnt):
+        out_of = 100 * Questions_cnt
+        quotient = finalScore / out_of
+        final_score_perc = quotient * 100
+
+        
+        print(final_score_perc)
+        return render(request, 'myReport.html', {'answerdQuestions':answerdQuestions, 'final_score_perc':final_score_perc})
+
+    # at least one question should be answerd
+    if(answerdQuestionsCount >= 1):
         # i have answerd all the questions
-        return render(request, 'myReport.html', {'Questions': Questions})
+        return render(request, 'myReport.html', {'answerdQuestions':answerdQuestions,'finalScore':finalScore})
     else:
         # I dident 
-        messages.warning(request,"Please answer all the questions to generate report.")
+        messages.warning(request,"Please answer at least one questions to generate report.")
         return render(request, 'myReport.html')
 
     
 
+# def calculate_final_score(Questions_cnt):
+#     Questions = InterviewData.objects.all()
+#     all_ques_per = 0
+#     for q in Questions_cnt:
+#         all_ques_per += Questions[q].marks_in_perc
+    
+#     return all_ques_per
+
+    
+
+def showAnaysis(request):
+    labels, data = showBarChart()
+    label_list = simplejson.dumps(labels)
+    data_list =  simplejson.dumps(data)
+    print(len(labels))
+    print(len(data))
+    if(len(labels) == 0 or len(data) ==0):
+        messages.warning(request,"Please answer at least one questions to analys your performance.")
+
+    return render(request, 'analysis.html',{'label_list':label_list, 'data_list':data_list})
+
+def showBarChart():
+   Questions = InterviewData.objects.all()
+   
+   labels = []
+
+   s = 1
+   for q in Questions:
+       if(q.marks_in_perc != 0):
+           labels.append('Question No '+ str(s))
+           s = s + 1
+ 
+
+   data = []
+   index = 1
+   for q in Questions:
+       if(q.marks_in_perc != 0):
+           accuracy = q.marks_in_perc
+           data.append(accuracy)
+           index += 1  
+    
+   return labels, data
 
 
+           
+   
+   
+
+    
+
+   

@@ -26,14 +26,6 @@ autoplay: true,
 
 <style>
 
-*{
-    margin:0;
-    padding:0;
-    box-sizing: border-box;
-    font-family: Arial, Helvetica, sans-serif;
-    /* background:linear-gradient(to right,#9c27b0,#8ecdff); */
-
-}
 
 body {
     font-family: Arial, Helvetica, sans-serif;
@@ -41,8 +33,11 @@ body {
     position: relative;
     padding-bottom: 58px;
     min-height: 100vh;
+    background-image: url('https://images.pexels.com/photos/4144923/pexels-photo-4144923.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940');
     
   }
+
+ 
 
 
 
@@ -70,64 +65,101 @@ body {
     margin-bottom: 150px;
 }
 
+.resultsec
+{
+    background-color: indigo;
+    padding: 15px;
+}
+
 
 
 </style>
 
 <body>
 
+<div class="background">
 
 
-<div id="printableArea">
-<div class="card Ccard" style="width: 50%; height: 100%; margin-top: 20px; margin-bottom: 10px;">
-    <h5 class="card-header text-center" style="font-size: 20px; ">
-        <strong>
 
-            {% if user.is_authenticated %}
-            {{ user.username }}
-            {% endif %}  
-        </strong></h5>
-    <div class="container">
-        <div class="row" >
-            <div class="col-md-6 text-center"  >
+    <div class="card Ccard" style="width: 50%; height: 100%; margin-top: 20px; margin-bottom: 10px;">
+        <h5 class="card-header text-center" style="font-size: 20px; ">
+            <strong>
+                {% if user.is_authenticated %}
+            Student Name -  {{ request.user.first_name }}
+                {% endif %}  
+            </strong></h5>
+        <div class="container">
+            <div class="row" >
+              
+
+                <div class="col-md-12 text-center"  >
+                    
+                    <h6 style=" text-align:center; font-size: 18px; margin-top: 10px;" > Today's Date  - {% getDate %}</h6>
                 
-                    <h6 style=" text-align:center; font-size: 18px; margin-top: 10px;" >Your Score is - 100% </h6>
+                
+                </div>
+
+                
+
                 
             </div>
-
-            <div class="col-md-6 text-center"  >
-                
-                <h6 style=" text-align:center; font-size: 18px; margin-top: 10px;" > Today's Date  - {% getDate %}</h6>
-               
-            
-            </div>
-
-            
-
-            
         </div>
-    </div>
+        
+        <!-- called the function -->
+        {% for q in answerdQuestions %}
+        
+        <hr>
+        <div class="row text-center">
+            <div class="col-md-6">
+                <h6 style="font-size: 18px; padding-left:5px;">Question No : {{q.index_no}}</h6>
+            </div>
+
+            <div class="col-md-6">
+                <h6 style="font-size: 18px; padding-left:5px;">Your Answer is : {{q.marks_in_perc}}% right</h6>
+            </div>
+
+
+        </div>
+        <hr>
+        <div class="card-body">
+        
+        <h6 style="font-size: 18px;"> Name : {{q.questions}} ?</h6>
+        
+        <h6 style="font-size: 18px;">Correct Answer: {{q.answers}}</h6>
+        <h6 style="font-size: 18px;">Given Answer: {{q.given_answer}}</h6>
+        
+
+
+        
+        </div>
+        
     
-    <!-- called the function -->
-    {% for q in Questions %}
-    <hr>
-    <h6 style="font-size: 18px; padding-left:5px;">Question No : {{q.index_no}}</h6>
-    <hr>
-    <div class="card-body">
-       
-      <h6 style="font-size: 18px;">Name : {{q.questions}}</h6>
-      
-      <h6 style="font-size: 18px;">Correct Answer: {{q.answers}}</h6>
-      <h6 style="font-size: 18px;">Given Answer: {{q.given_answer}}</h6>
-      
+        {% endfor %}  
 
+        {% load getMessage %}
 
-      
-    </div>
-   
-    {% endfor %}  
+        
+    
+        <div class="col-md-12 text-center resultsec" style="color: white;">
+            
+            <h6>
+                {% if final_score_perc %}
+                <h6 style="font-size: 18px; padding-left:5px;"><strong>Your Final score is</strong> </h6>
+                <h6 style="font-size: 18px; padding-left:5px;">{{final_score_perc}}%</h6>
+                {% getMessage final_score_perc %}
+                {% endif %}
+
+                {% if not final_score_perc  %}
+                <h6 style="font-size: 18px; padding-left:5px;"><strong>Answer all questions to see your final score.</strong> </h6>
+                {% endif %}
+            </h6>
+
+        </div>
+        
   </div>
-</div>
+
+
+  
 
      
 
@@ -142,5 +174,7 @@ body {
 
   
    {% endblock %}
+ 
+</div>
 
 </body>

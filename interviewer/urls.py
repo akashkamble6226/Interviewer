@@ -20,6 +20,8 @@ urlpatterns=[
     url('askQuestion/(?P<id>[0-9]+)',views.askQuestion,name='askQuestion'),
     url('giveAnswer/(?P<id>[0-9]+)',views.giveAnswer,name='giveAnswer'),
     url('showReport',views.showReport,name='showReport'),
+    url('showAnaysis',views.showAnaysis,name='showAnaysis'),
+    
    
     
 
